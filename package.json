@@ -1,0 +1,28 @@
+{
+  "name": "vsense",
+  "version": "1.0.0",
+  "description": "Manage communication with Mindwave Headset",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development",
+    "watch": "npm run dev -- --watch"
+  },
+  "author": "Verum Consilium",
+  "dependencies": {
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^10.9.2",
+    "@types/webpack-env": "^1.13.6",
+    "bindings": "^1.3.0",
+    "lodash": "^4.17.10",
+    "rxjs": "^6.2.2",
+    "serialport": "^6.2.2",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "devDependencies": {
+    "ts-loader": "^4.5.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.17.1",
+    "webpack-cli": "^3.1.0"
+  }
+}
