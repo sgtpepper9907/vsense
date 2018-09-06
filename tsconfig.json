@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "lib": [
+            "es2015"
+        ],
+        "target": "es5"        
+    }
+}
