@@ -137,7 +137,7 @@ export default class Listener extends EventEmitter
                         this.emit('requestDenied', value);
                         break;
                     case ASIC_EEG_POWER:
-                        let waves = {
+                        let waves:object = {
                             delta: value.readIntBE(0,3),
                             theta: value.readIntBE(3,3),
                             lowAlpha: value.readIntBE(6,3),
@@ -151,7 +151,7 @@ export default class Listener extends EventEmitter
                         this.emit('asicEegPower', waves);
                         break;
                     case RAW_VALUE:
-                        let raw = value[0] * 256 + value[1];
+                        let raw:number = value[0] * 256 + value[1];
                         if (raw >= 32768) {
                             raw = raw - 65536;
                         }
