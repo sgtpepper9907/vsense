@@ -1,6 +1,20 @@
 import Headset from './src/Headset/Headset.ts';
+import express from 'express';
 
 let headset = new Headset();
+let app = express();
+
+app.get('/connect', (req, res) => {
+    headset.connect();
+    res.send('Connecting...');
+});
+
+app.get('/disconnect', (req, res) => {
+    headset.disconnect();
+    res.send('disconnecting...');
+});
+
+app.listen(3000);
 
 headset.listener.on('disconnected', (headestId) => {
     console.log('disconnected:', headestId);
