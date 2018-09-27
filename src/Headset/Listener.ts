@@ -18,63 +18,60 @@ const STANDBY_SCAN = 0xD4;
 
 export default class Listener extends EventEmitter
 {
-    protected dongle:SerialPort;
+    protected data:Buffer = Buffer.from([]);
 
     constructor(dongle:SerialPort) 
     {
         super();
         EventEmitter.call(this);
-        this.dongle = dongle;
-        this.listen();
+        dongle.on('data', (data) => {
+            this.data = Buffer.concat([this.data, data]);
+            this.listen();
+        })
     }
 
-    protected listen(): void 
+    protected listen(): void
     {
-        let dongle = this.dongle;
+        // Check [SYNC] bytes
+        if (!this.read(1).equals(SYNC_BYTE)) {
+            return;
+        }
+        if (!this.read(1).equals(SYNC_BYTE)) {
+            return;
+        }
 
-        dongle.on('readable', () => {
-            // Check [SYNC] bytes
-            if (!dongle.read(1).equals(SYNC_BYTE)) {
-                return;
+        // Get [PLENGTH] byte
+        let pLength:Buffer;
+        while (true) {
+            pLength = this.read(1);
+
+            if (!pLength.equals(SYNC_BYTE)) {
+                break;
             }
-            if (!dongle.read(1).equals(SYNC_BYTE)) {
-                return;
-            }
+        }
+        if (pLength[0] >= 169) {
+            return;
+        }
 
-            // Get [PLENGTH] byte
-            let pLength:Buffer;
-            while (true) {
-                pLength = dongle.read(1);
+        // Collect [PAYLOAD...] bytes
+        let payload:Buffer = this.read(pLength[0]);
 
-                if (!pLength.equals(SYNC_BYTE)) {
-                    break;
-                }
-            }
-            if (pLength[0] >= 169) {
-                return;
-            }
+        // Calculate [PAYLOAD...] checksum
+        let calculatedChecksum:number = 0;
+        for (let i = 0; i < pLength[0]; i++) {
+            calculatedChecksum += payload[i]; // Sum up all the bytes in the payload
+        }
+        calculatedChecksum &= 0xFF; // Get the 8 lower bits from the sum
+        calculatedChecksum = ~calculatedChecksum & 0xFF; // Get the inverse of those 8 bits
 
-            // Collect [PAYLOAD...] bytes
-            let payload:Buffer = dongle.read(pLength[0]);
+        // Verify [CHECKSUM] against calculated [PAYLOAD...] checksum
+        let checksum:Buffer = this.read(1);
+        if (checksum[0] != calculatedChecksum) {
+            return;
+        }
 
-            // Calculate [PAYLOAD...] checksum
-            let calculatedChecksum:number = 0;
-            for (let i = 0; i < pLength[0]; i++) {
-                calculatedChecksum += payload[i]; // Sum up all the bytes in the payload
-            }
-            calculatedChecksum &= 0xFF; // Get the 8 lower bits from the sum
-            calculatedChecksum = ~calculatedChecksum & 0xFF; // Get the inverse of those 8 bits
-
-            // Verify [CHECKSUM] against calculated [PAYLOAD...] checksum
-            let checksum:Buffer = dongle.read(1);
-            if (checksum[0] != calculatedChecksum) {
-                return;
-            }
-
-            // [CHECKSUM] is valid, parse [PAYLOAD...]
-            this.parsePayload(payload);
-        });
-    
+        // [CHECKSUM] is valid, parse [PAYLOAD...]
+        this.parsePayload(payload);
     }
 
     protected parsePayload(payload:Buffer):void
@@ -164,5 +161,11 @@ export default class Listener extends EventEmitter
             }
         }
 
+    }
+
+    protected read(length:number = 1) {
+        let byte = this.data.slice(0, length);
+        this.data = this.data.slice(length, this.data.length);
+        return byte;
     }
 }
