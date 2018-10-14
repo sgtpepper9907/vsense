@@ -15,13 +15,15 @@ export default class Headset
     protected port:string;
     protected dongle:SerialPort;
     protected connected = false;
+    public raw: number;
+    public waves: object;
 
     public constructor(options:HeadsetConfig = {}) 
     {
         this.port = options.port || '/dev/ttyUSB0';
         this.baudRate = options.baudRate || 115200;
         this.openSerialPort();
-        this._listener = new Listener(this.dongle);
+        this._listener = new Listener(this.dongle, this);
     }
 
     public connect(headestID:Array<number> = []) 
@@ -46,7 +48,7 @@ export default class Headset
     public get listener() : Listener 
     {
         if (_.isEmpty(this._listener)) {
-            return new Listener(this.dongle);
+            return new Listener(this.dongle, this);
         }
 
         return this._listener;

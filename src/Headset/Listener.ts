@@ -1,5 +1,6 @@
 import * as SerialPort from "serialport";
 import { EventEmitter } from "events";
+import Headset from './Headset';
 
 const SYNC_BYTE = Buffer.from([0xAA]);
 const EXCODE = 0x55;
@@ -19,8 +20,9 @@ const STANDBY_SCAN = 0xD4;
 export default class Listener extends EventEmitter
 {
     protected data:Buffer = Buffer.from([]);
+    protected headset: Headset;
 
-    constructor(dongle:SerialPort) 
+    constructor(dongle:SerialPort, headset: Headset)
     {
         super();
         EventEmitter.call(this);
@@ -28,6 +30,7 @@ export default class Listener extends EventEmitter
             this.data = Buffer.concat([this.data, data]);
             this.listen();
         })
+        this.headset = headset;
     }
 
     protected listen(): void
@@ -146,6 +149,7 @@ export default class Listener extends EventEmitter
                         };
 
                         this.emit('asicEegPower', waves);
+                        this.headset.waves = waves;
                         break;
                     case RAW_VALUE:
                         let raw:number = value[0] * 256 + value[1];
@@ -154,6 +158,7 @@ export default class Listener extends EventEmitter
                         }
 
                         this.emit('rawValue', raw);
+                        this.headset.raw = raw;
                         break;
                     default:
                         break;
