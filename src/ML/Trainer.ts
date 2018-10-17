@@ -2,11 +2,12 @@ import Headset from '../Headset/Headset';
 import { MongoClient } from 'mongodb';
 import { EventEmitter } from 'events';
 
-class Trainer {
+export class Trainer {
     
     protected headset: Headset;
-    public collection: MongoClient.databse.collection;
+    public collection;
     protected emitter: EventEmitter;
+    protected data = [];
 
     constructor(headset: Headset) {
         this.headset = headset;
@@ -19,9 +20,10 @@ class Trainer {
         });
     }
 
-    public train(output: string, action: Promise<any>) {
+    public train(output: string, action: Function) {
+
         let interval = setInterval(() => {
-            this.collection.insert({
+            this.data.push({
                 input: {
                     raw: this.headset.raw,
                     ...this.headset.waves
@@ -29,7 +31,18 @@ class Trainer {
             })
         }, 50);
 
-        action.then(() => clearInterval(interval))
+        action();
+
+        if (this.data.length) {
+            this.collection.insertMany(this.data).then(() => {
+                clearInterval(interval);
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+
+        this.data = [];
+
     }
 
     public on(event:string): Promise<any> {
