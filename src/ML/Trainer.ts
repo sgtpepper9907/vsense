@@ -20,29 +20,49 @@ export class Trainer {
         });
     }
 
-    public train(output: string, action: Function) {
+    public train(output: string, action: Promise<any>) {
 
         let interval = setInterval(() => {
+            if (this.headset.waves &&
+                !this.headset.waves.lowGamma &&
+                !this.headset.waves.highGamma) return;
             this.data.push({
                 input: {
                     raw: this.headset.raw,
-                    ...this.headset.waves
-                }, output
+                    lowGamma: this.headset.waves.lowGamma,
+                    highGamma: this.headset.waves.highGamma
+                }, output: { [output]: 1}
             })
-        }, 50);
+        }, 500);
 
-        action();
+        action.then(() => {
+            clearInterval(interval);
+            let data = this.data.slice(0);
+            this.data = [];
+            console.log(data);
+            console.log('done ' + output);
+            if (data.length) {
+                this.collection.insertMany(data)
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
+        })
 
-        if (this.data.length) {
-            this.collection.insertMany(this.data).then(() => {
-                clearInterval(interval);
-            }).catch((error) => {
-                console.log(error);
-            });
-        }
+        return action;
 
-        this.data = [];
+    }
 
+    public getData() {
+        let cursor = this.collection.find();
+        let data = [];
+        return new Promise((resolve) => {
+            cursor.forEach(({input, output}) => {
+                data.push({input, output});
+            }).then(() => {
+                resolve(data);
+            })
+        })
     }
 
     public on(event:string): Promise<any> {
