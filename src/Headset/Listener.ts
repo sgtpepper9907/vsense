@@ -123,7 +123,8 @@ export default class Listener extends EventEmitter
 
                 switch (code) {
                     case HEADSET_CONNECTED:
-                        this.emit('connected', value);
+                        let id:string = value.toString('hex').toUpperCase();
+                        this.emit('connected', id);
                         break;
                     case HEADSET_NOT_FOUND:
                         this.emit('notFound', value);
