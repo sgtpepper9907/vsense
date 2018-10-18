@@ -104,6 +104,7 @@ export default class Listener extends EventEmitter
                         break;
                     case ATTENTION:
                         this.emit('attention', value);
+                        this.headset.attention = value;
                         break;
                     case MEDITATION:
                         this.emit('meditation', value);

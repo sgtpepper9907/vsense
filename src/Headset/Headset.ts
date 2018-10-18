@@ -18,6 +18,7 @@ export default class Headset
     protected connected = false;
     public raw: number;
     public waves: Waves;
+    public attention: number;
 
     public constructor(options:HeadsetConfig = {}) 
     {
