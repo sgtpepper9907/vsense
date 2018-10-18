@@ -1,6 +1,7 @@
 import * as SerialPort from "serialport";
 import { EventEmitter } from "events";
 import Headset from './Headset';
+import { Waves } from '../Interfaces/Waves';
 
 const SYNC_BYTE = Buffer.from([0xAA]);
 const EXCODE = 0x55;
@@ -137,7 +138,7 @@ export default class Listener extends EventEmitter
                         this.emit('requestDenied', value);
                         break;
                     case ASIC_EEG_POWER:
-                        let waves:object = {
+                        let waves: Waves = {
                             delta: value.readIntBE(0,3),
                             theta: value.readIntBE(3,3),
                             lowAlpha: value.readIntBE(6,3),

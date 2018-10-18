@@ -2,6 +2,7 @@ import  HeadsetConfig  from "../Interfaces/HeadsetConfig";
 import * as SerialPort from "serialport";
 import  Listener  from "./Listener";
 import * as _ from "lodash";
+import { Waves } from '../Interfaces/Waves';
 
 const CONNECT = [0xC0];
 const DISCONNECT = [0xC1];
@@ -16,7 +17,7 @@ export default class Headset
     protected dongle:SerialPort;
     protected connected = false;
     public raw: number;
-    public waves: object;
+    public waves: Waves;
 
     public constructor(options:HeadsetConfig = {}) 
     {
